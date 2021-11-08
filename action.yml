@@ -23,9 +23,6 @@ inputs:
   kubernetes-subfolder:
     description: 'Kubernetes Subfolder'
     required: true
-  on-push-branch:
-    description: 'On push branch'
-    required: true
 
 runs:
   using: "composite"
