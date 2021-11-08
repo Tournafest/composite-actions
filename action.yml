@@ -69,12 +69,14 @@ runs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg ENV=$ENV .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        shell: bash
 
       - name: Set up Kustomize
         id: setup-kustomize
         run: |-
           curl -sfLo ~/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
           chmod u+x ~/kustomize
+        shell: bash
     
       - name: Deploy to EKS
         id: deploy-eks
@@ -89,3 +91,4 @@ runs:
           aws eks update-kubeconfig --name ${AWS_EKS_CLUSTER_NAME}
           ~/kustomize edit set image nginx=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           ~/kustomize build . | kubectl apply -f -
+        shell: bash
