@@ -36,7 +36,7 @@ runs:
         shell: bash
           
       - name: Write firebase-json to a firebase.json file 
-        run:  echo ${{ inputs.firebase-json }} > firebase.json
+        run:  echo ${{ inputs.firebase-json }} 
         shell: bash
 
       # - name: Configure AWS credentials
