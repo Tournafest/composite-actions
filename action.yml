@@ -39,56 +39,56 @@ runs:
         run:  echo ${{ inputs.firebase-json }} > firebase.json
         shell: bash
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ inputs.aws-access-key }}
-          aws-secret-access-key: ${{ inputs.aws-secret-key }}
-          aws-region: ${{ inputs.aws-region }}
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     aws-access-key-id: ${{ inputs.aws-access-key }}
+      #     aws-secret-access-key: ${{ inputs.aws-secret-key }}
+      #     aws-region: ${{ inputs.aws-region }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Create a ECR repo
-        shell: bash
-        run: |
-          aws ecr describe-repositories --repository-names ${{ github.event.repository.name }} || ( aws ecr create-repository --repository-name ${{ github.event.repository.name }}  && aws ecr put-lifecycle-policy --repository-name ${{ github.event.repository.name }} --lifecycle-policy-text "{\"rules\":[{\"rulePriority\":1,\"description\":\"Keep last 5 images\",\"selection\":{\"tagStatus\":\"any\",\"countType\":\"imageCountMoreThan\",\"countNumber\":5},\"action\":{\"type\":\"expire\"}}]}"  )
+      # - name: Create a ECR repo
+      #   shell: bash
+      #   run: |
+      #     aws ecr describe-repositories --repository-names ${{ github.event.repository.name }} || ( aws ecr create-repository --repository-name ${{ github.event.repository.name }}  && aws ecr put-lifecycle-policy --repository-name ${{ github.event.repository.name }} --lifecycle-policy-text "{\"rules\":[{\"rulePriority\":1,\"description\":\"Keep last 5 images\",\"selection\":{\"tagStatus\":\"any\",\"countType\":\"imageCountMoreThan\",\"countNumber\":5},\"action\":{\"type\":\"expire\"}}]}"  )
 
-      - name: Set up Docker Buildx                             
-        id: buildx                                             
-        uses: docker/setup-buildx-action@master
+      # - name: Set up Docker Buildx                             
+      #   id: buildx                                             
+      #   uses: docker/setup-buildx-action@master
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ github.event.repository.name }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg ENV=$ENV .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-        shell: bash
+      # - name: Build, tag, and push image to Amazon ECR
+      #   id: build-image
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     ECR_REPOSITORY: ${{ github.event.repository.name }}
+      #     IMAGE_TAG: ${{ github.sha }}
+      #   run: |
+      #     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg ENV=$ENV .
+      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      #     echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+      #   shell: bash
 
-      - name: Set up Kustomize
-        id: setup-kustomize
-        run: |-
-          curl -sfLo ~/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
-          chmod u+x ~/kustomize
-        shell: bash
+      # - name: Set up Kustomize
+      #   id: setup-kustomize
+      #   run: |-
+      #     curl -sfLo ~/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
+      #     chmod u+x ~/kustomize
+      #   shell: bash
     
-      - name: Deploy to EKS
-        id: deploy-eks
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ github.event.repository.name }}
-          IMAGE_TAG: ${{ github.sha }}
-          AWS_REGION: ${{ inputs.aws-region }}
-          AWS_EKS_CLUSTER_NAME: ${{ inputs.aws-eks-cluster-name }}
-        run: |-
-          cd kubernetes/${{ inputs.kubernetes-subfolder }}
-          aws eks update-kubeconfig --name ${AWS_EKS_CLUSTER_NAME}
-          ~/kustomize edit set image nginx=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          ~/kustomize build . | kubectl apply -f -
-        shell: bash
+      # - name: Deploy to EKS
+      #   id: deploy-eks
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     ECR_REPOSITORY: ${{ github.event.repository.name }}
+      #     IMAGE_TAG: ${{ github.sha }}
+      #     AWS_REGION: ${{ inputs.aws-region }}
+      #     AWS_EKS_CLUSTER_NAME: ${{ inputs.aws-eks-cluster-name }}
+      #   run: |-
+      #     cd kubernetes/${{ inputs.kubernetes-subfolder }}
+      #     aws eks update-kubeconfig --name ${AWS_EKS_CLUSTER_NAME}
+      #     ~/kustomize edit set image nginx=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      #     ~/kustomize build . | kubectl apply -f -
+      #   shell: bash
