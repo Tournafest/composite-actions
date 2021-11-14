@@ -94,5 +94,6 @@ runs:
           cd kubernetes/${{ inputs.kubernetes-subfolder }}
           aws eks update-kubeconfig --name ${AWS_EKS_CLUSTER_NAME}
           ~/kustomize edit set image nginx=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          ~/kustomize edit set namesuffix=${{ github.sha }}
           ~/kustomize build . | kubectl apply -f -
         shell: bash
