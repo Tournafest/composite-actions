@@ -81,7 +81,8 @@ runs:
           curl -sfLo ~/kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
           chmod u+x ~/kustomize
         shell: bash
-    
+
+      # NOTE: Deleting the jobs is not best idea, that is the current solution we are using
       - name: Deploy to EKS
         id: deploy-eks
         env:
@@ -90,10 +91,11 @@ runs:
           IMAGE_TAG: ${{ github.sha }}
           AWS_REGION: ${{ inputs.aws-region }}
           AWS_EKS_CLUSTER_NAME: ${{ inputs.aws-eks-cluster-name }}
+          NAMESUFFIX: ${{ github.sha }}
         run: |-
           cd kubernetes/${{ inputs.kubernetes-subfolder }}
           aws eks update-kubeconfig --name ${AWS_EKS_CLUSTER_NAME}
           ~/kustomize edit set image nginx=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          ~/kustomize edit set namesuffix=${{ github.sha }}
+          kubectl delete --ignore-not-found=true -f jobs.yaml
           ~/kustomize build . | kubectl apply -f -
         shell: bash
