@@ -36,12 +36,6 @@ runs:
         shell: bash
         env:
           ENV_FILE: ${{ inputs.env-file }}
-        
-      - name: Write NEWRELIC_INI to a newrelic.ini file 
-        run:  echo $NEWRELIC_INI > newrelic.ini && sed -i 's/\;/\n/g' newrelic.ini
-        shell: bash
-        env:
-          NEWRELIC_INI: ${{inputs.newrelic-ini}}
           
       - name: Write firebase-json to a firebase.json file 
         run:  echo $FIREBASE_JSON > firebase.json
