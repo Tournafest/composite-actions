@@ -52,7 +52,10 @@ runs:
       
       - name: Use old version of kubectl
         shell: bash
-        run: curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl && mv ./kubectl ~/kubectl
+        run: |
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl 
+          mv ./kubectl ~/kubectl
+          chmod u+x ~/kubectl
 
       - name: Login to Amazon ECR
         id: login-ecr
