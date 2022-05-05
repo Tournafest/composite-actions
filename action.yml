@@ -49,6 +49,10 @@ runs:
           aws-access-key-id: ${{ inputs.aws-access-key }}
           aws-secret-access-key: ${{ inputs.aws-secret-key }}
           aws-region: ${{ inputs.aws-region }}
+      
+      - name: Use old version of kubectl
+        shell: bash
+        run: curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl && mv ./kubectl ~/kubectl
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -96,6 +100,6 @@ runs:
           cd kubernetes/${{ inputs.kubernetes-subfolder }}
           aws eks update-kubeconfig --name ${AWS_EKS_CLUSTER_NAME}
           ~/kustomize edit set image nginx=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          kubectl delete --ignore-not-found=true -f jobs.yaml
-          ~/kustomize build . | kubectl apply -f -
+          ~/kubectl delete --ignore-not-found=true -f jobs.yaml
+          ~/kustomize build . | ~/kubectl apply -f -
         shell: bash
